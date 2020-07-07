@@ -1,0 +1,61 @@
+version: "3.3" # https://docs.docker.com/compose/compose-file/
+
+services:
+  tstapp:
+    image: vladk/tstapp:latest
+    hostname: tstapp
+    networks:
+      - tstappnet
+    deploy:
+      replicas: 4
+      labels:
+        feature.description: "Backend TST App"
+      update_config:
+        parallelism: 1
+        delay: 4s
+      restart_policy:
+        condition: any
+    environment:
+      - REDIS_HOST=redis
+      - SERVER_PORT=8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    command: pipenv run python server.py
+
+  redis:
+    image: 'redis:5-alpine'
+    hostname: redis
+    networks:
+      - tstappnet
+    command: redis-server --requirepass qwerty
+    volumes:
+      - data:/data
+
+  nginx:
+    image: nginx:stable
+    hostname: nginx
+    networks:
+      - tstappnet
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./lb/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - tstapp
+    deploy:
+      mode: global
+      #replicas: 4
+      labels:
+        feature.description: "Proxy for TST App"
+      update_config:
+        parallelism: 1
+        delay: 4s
+      restart_policy:
+        condition: any
+
+networks:
+  tstappnet:
+volumes:
+  data:

@@ -1,0 +1,57 @@
+Prerequirements:
+ under regular user running a minikube with proper containerization/virtualization technology
+
+
+Example:
+[vladk@vkhost ~]$ minikube start --vm-driver=virtualbox
+😄  minikube v1.11.0 on Fedora 32
+✨  Using the virtualbox driver based on user configuration
+👍  Starting control plane node minikube in cluster minikube
+🔥  Creating virtualbox VM (CPUs=2, Memory=6000MB, Disk=20000MB) ...
+🐳  Preparing Kubernetes v1.18.3 on Docker 19.03.8 ...
+🔎  Verifying Kubernetes components...
+🌟  Enabled addons: default-storageclass, storage-provisioner
+🏄  Done! kubectl is now configured to use "minikube"
+
+❗  /usr/bin/kubectl is version 1.15.8-beta.0, which may be incompatible with Kubernetes 1.18.3.
+💡  You can also use 'minikube kubectl -- get pods' to invoke a matching version
+[vladk@vkhost ~]$
+[vladk@vkhost ~]$ minikube status
+minikube
+type: Control Plane
+host: Running
+kubelet: Running
+apiserver: Running
+kubeconfig: Configured
+
+[vladk@vkhost ~]$
+
+# to init app in minicube
+# ./deploy.sh init
+
+
+
+############ Init docker swarm #################
+# docker swarm init --advertise-addr <IP_address>
+
+## to join docker swarm from different instances
+# docker swarm join --token <token> <IP_address>:<port>
+
+## to propagate instances to manager 
+# docker node propagate <nodeID> 
+
+## for docker swarm need to maintain local docker registry or use github
+# docker service create --name registry --publish published=5000,target=5000 registry:2
+
+## to deploy instances 
+# docker stack deploy -c docker-compose-deploy.yml TSTAPP
+
+## to review service list
+# docker service ls 
+
+# Note: for docker swarm to work need next firewall rules between instances
+TCP port 2376 for secure Docker client communication
+TCP port 2377. This port is used for communication between the nodes of a Docker Swarm or cluster. It only needs to be opened on manager nodes.
+TCP and UDP port 7946 for communication among nodes (container network discovery)
+UDP port 4789 for overlay network traffic (container ingress networking).
+
